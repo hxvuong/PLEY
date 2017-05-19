@@ -43,42 +43,72 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func getPlaceByPlaceID(_ placeid:String)
     {
-        let urlTemplate = "https://maps.googleapis.com/maps/api/place/details/json?placeid="+placeid+"&key="+apiKey
+        let urlTemplate = "http://54.241.187.189:8080/PLEY_TEST/GetRestaurantByPlaceId?place_id="+placeIDToPass
         if let url = NSURL(string: urlTemplate) {
             let request = NSURLRequest(url: url as URL)
             let session = URLSession.shared
             session.dataTask(with: request as URLRequest) { (data, response, error) in
                 if (error == nil) {
                     do {
-                        let parsedData = try JSONSerialization.jsonObject(with: data!, options: []) as! [String:Any]
-                        let result = parsedData["result"] as! [String:Any]
+                        let result = try JSONSerialization.jsonObject(with: data!, options: []) as! [String:Any]
+//                        let result = parsedData["result"] as! [String:Any]
                         
-                        print(result)
+//                        print(result)
                         
                         
                         let name = result["name"] as! String
-                        let defaultphoto = UIImage(named: "defaultRestaurant")
-//                        let jrate = result["rating"] as? String
-//                        var rate : Float = 0.0
-//                        if (jrate != nil) {
-//                            rate = Float(jrate!)!
-//                        }
-//                        let jprice = result["price_level"] as? String
-//                        var price : Float = 0.0
-//                        if (jprice != nil) {
-//                            price = Float(jprice!)!
-//                        }
-
-                        let rate = result["rating"] as? Float ?? 0
-                        let price = result["price_level"] as? Float ?? 0
-                        let placeID = placeIDToPass
-                        let address = result["formatted_address"] as! String
-                        let phone = result["formatted_phone_number"] as? String
-                        let website = result["website"] as? String
                         
-                        let rest = Restaurant(name: name, photo: defaultphoto, rating: Int(rate), price: Int(price), placeID: placeID, address: address, phone: phone!, website: website!)
+//                        let imageURL = result["image_url"] as? String
+                        let imageURL = "https://s-media-cache-ak0.pinimg.com/originals/8b/19/f7/8b19f7147ba13841903b1e9d28f2d058.jpg"
+                        
+
+//                        if imageURL != nil {
+//                            if let url = URL(string: imageURL) {
+//                                let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
+//                                    if let data = data {
+//                                        photo = UIImage(data: data)!
+//                                        self.restImg.image = UIImage(data: data)
+//                                    }
+//                                })
+//                                task.resume()
+//                            }
+//                        } else {
+//                            photo = UIImage(named: "defaultRestaurant")!
+//                        }
+                        var photo = UIImage(named: "defaultRestaurant")!
+                        if let url = URL(string: imageURL) {
+                            let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
+                                if let data = data {
+                                    let photo1 = UIImage(data: data)
+                                    photo = copy(photo1)
+                                }
+                            })
+                            task.resume()
+                        }
+                        
+                        let jrate = result["rating"] as? String
+                        
+                        var rate : Float = 0.0
+                        if (jrate != nil) {
+                            rate = Float(jrate!)!
+                        }
+                        
+
+                        let price = result["price_level"] as! Float
+                        let placeID = placeIDToPass
+                        let address = result["address"] as! String
+                        let phone = result["phone"] as? String
+                        
+                        var website = result["website"] as? String
+                        if website == nil {
+                            website = "No Data"
+                        }
+                    
+                        
+                        let rest = Restaurant(name: name, photo: photo as! UIImage, rating: Int(rate), price: Int(price), placeID: placeID, address: address, phone: phone!, website: website!)
                         
                         self.restName.text = rest?.name
+                        self.restImg.image = rest?.photo
                         self.restRate.text = "Rate: \(rest?.rating ?? 0)"
                         self.restPrice.text = "Price: \(rest?.price ?? 0)"
                         self.restAddr.text = rest?.address

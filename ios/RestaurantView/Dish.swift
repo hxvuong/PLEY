@@ -16,6 +16,14 @@ class Dish {
     var rating: Int
     var description: String?
     
+    init?() {
+        self.name = ""
+        self.price = 0
+        self.category = ""
+        self.photo = nil
+        self.rating = 0
+        self.description = ""
+    }
     
     init?(name: String, price: Float, category: String, photo: UIImage?, rating: Int, description: String?) {
         

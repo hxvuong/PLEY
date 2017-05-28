@@ -18,9 +18,9 @@ class DishViewController: UIViewController {
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        dishTitle.text = dishes[myIndex]
-        dishImage.image = UIImage(named: dishes[myIndex] + ".jpg")
-        dishDesc.text = dishesDesc[myIndex]
+        dishTitle.text = dishToPass?.name
+//        dishImage.image = UIImage(named: dishes[myIndex] + ".jpg")
+        dishDesc.text = dishToPass?.description
         // Do any additional setup after loading the view.
     }
 

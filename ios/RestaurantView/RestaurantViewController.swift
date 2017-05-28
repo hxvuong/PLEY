@@ -8,14 +8,18 @@
 
 import UIKit
 
-var dishes = ["pho", "mi", "com tam"]
-var myIndex = 0
-var dishesDesc = ["rice noodles","egg noodles","broken rice"]
+//var dishes = ["pho", "mi", "com tam"]
+//var myIndex = 0
+//var dishesDesc = ["rice noodles","egg noodles","broken rice"]
 
+
+var dishToPass = Dish()
 var cats = ["Starter", "Entree", "Side", "Desert"]
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate {
 
+    var dishes1 = [Dish]()
+    
     @IBOutlet weak var menuTableView: UITableView!
     @IBOutlet weak var catTextBox: UITextField!
     @IBOutlet weak var catPicker: UIPickerView!
@@ -56,36 +60,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //                        print(result)
                         
                         
-                        let name = result["name"] as! String
-                        
-//                        let imageURL = result["image_url"] as? String
-                        let imageURL = "https://s-media-cache-ak0.pinimg.com/originals/8b/19/f7/8b19f7147ba13841903b1e9d28f2d058.jpg"
-                        
-
-//                        if imageURL != nil {
-//                            if let url = URL(string: imageURL) {
-//                                let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
-//                                    if let data = data {
-//                                        photo = UIImage(data: data)!
-//                                        self.restImg.image = UIImage(data: data)
-//                                    }
-//                                })
-//                                task.resume()
-//                            }
-//                        } else {
-//                            photo = UIImage(named: "defaultRestaurant")!
-//                        }
-                        var photo = UIImage(named: "defaultRestaurant")!
-                        if let url = URL(string: imageURL) {
-                            let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
-                                if let data = data {
-                                    let photo1 = UIImage(data: data)
-                                    photo = copy(photo1)
-                                }
-                            })
-                            task.resume()
-                        }
-                        
                         let jrate = result["rating"] as? String
                         
                         var rate : Float = 0.0
@@ -104,26 +78,51 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                             website = "No Data"
                         }
                     
-                        
-                        let rest = Restaurant(name: name, photo: photo as! UIImage, rating: Int(rate), price: Int(price), placeID: placeID, address: address, phone: phone!, website: website!)
-                        
-                        self.restName.text = rest?.name
-                        self.restImg.image = rest?.photo
-                        self.restRate.text = "Rate: \(rest?.rating ?? 0)"
-                        self.restPrice.text = "Price: \(rest?.price ?? 0)"
-                        self.restAddr.text = rest?.address
-                        self.restPhone.text = rest?.phone
-                        self.restWeb.text = rest?.website
-                        
-//                        self.restName.text = result["name"] as? String
-//                        let rate = result["rating"] as? Float
-//                        self.restRate.text = "Rate: \(rate ?? 0)"
-//                        let price = result["price_level"] as? Float
-//                        self.restPrice.text = "Price: \(price ?? 0)"
-//                        self.restAddr.text = result["formatted_address"] as? String
-//                        self.restPhone.text = result["formatted_phone_number"] as? String
-//                        self.restWeb.text = result["website"] as? String
-
+                        let name = result["name"] as! String
+                        let imageURL = result["image_url"] as! String
+                        if let url = URL(string: imageURL) {
+                            let task = URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
+                                if let data = data {
+                                    let photo = UIImage(data: data)
+                                    let rest = Restaurant(name: name, photo: photo!, rating: Int(rate), price: Int(price), placeID: placeID, address: address, phone: phone!, website: website!)
+                                    self.restName.text = rest?.name
+                                    self.restImg.image = rest?.photo
+                                    self.restRate.text = "Rate: \(rest?.rating ?? 0)"
+                                    self.restPrice.text = "Price: \(rest?.price ?? 0)"
+                                    self.restAddr.text = rest?.address
+                                    self.restPhone.text = rest?.phone
+                                    self.restWeb.text = rest?.website
+                                }
+                            })
+                            task.resume()
+                        } else {
+                            let photo = UIImage(named: "defaultRestaurant")!
+                            let rest = Restaurant(name: name, photo: photo , rating: Int(rate), price: Int(price), placeID: placeID, address: address, phone: phone!, website: website!)
+                            self.restName.text = rest?.name
+                            self.restImg.image = rest?.photo
+                            self.restRate.text = "Rate: \(rest?.rating ?? 0)"
+                            self.restPrice.text = "Price: \(rest?.price ?? 0)"
+                            self.restAddr.text = rest?.address
+                            self.restPhone.text = rest?.phone
+                            self.restWeb.text = rest?.website
+                        }
+                        let dishesList = result["dishes"] as! [[String:Any]]
+                        print(dishesList)
+                        for item in dishesList {
+                            let dname = item["dish"] as! String
+                            let dprice = item["price"] as! Float
+                            let dcategory = "Starter"
+                            let dphoto = UIImage(named: "defaultRestaurant")
+                            let drate = item["rating"] as! Float
+                            let ddescription = item["description"] as! String
+                            
+                            guard let d = Dish(name: dname, price: dprice, category: dcategory, photo: dphoto, rating: Int(drate), description: ddescription) else {
+                                fatalError("Cannot instantiate")
+                            }
+                            self.dishes1.append(d)
+                            
+                            self.menuTableView.reloadData()
+                        }
                         
                     } catch let error as NSError {
                         print(error)
@@ -136,19 +135,29 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         
     }
 
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dishes.count
+        return dishes1.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 //        let cell = UITableViewCell()
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = dishes[indexPath.row]
+        let cellIdentifier = "cell"
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as? MenuTableViewCell else {
+            fatalError("dequeue error")
+        }
+        let d = dishes1[indexPath.row]
+        cell.dishName.text = d.name
+        cell.dishRate.rating = d.rating
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        myIndex = indexPath.row
+//        myIndex = indexPath.row
+        dishToPass = dishes1[indexPath.row]
         performSegue(withIdentifier: "segue", sender: self)
     }
     

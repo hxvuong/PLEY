@@ -8,11 +8,6 @@
 
 import UIKit
 
-//var dishes = ["pho", "mi", "com tam"]
-//var myIndex = 0
-//var dishesDesc = ["rice noodles","egg noodles","broken rice"]
-
-
 var dishToPass = Dish()
 var cats = ["Starter", "Entree", "Side", "Desert"]
 
